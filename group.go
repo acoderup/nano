@@ -58,6 +58,11 @@ func NewGroup(n string) *Group {
 	}
 }
 
+// Name return name
+func (c *Group) Name() string {
+	return c.name
+}
+
 // FindMember Find a member with customer filter
 func (c *Group) FindMember(filter func(ses *session.Session) bool) (*session.Session, error) {
 	c.mu.RLock()
