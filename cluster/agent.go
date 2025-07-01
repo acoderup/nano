@@ -259,7 +259,7 @@ func (a *agent) write() {
 				log.Println(fmt.Sprintf("Session heartbeat timeout, LastTime=%d, Deadline=%d", atomic.LoadInt64(&a.lastAt), deadline))
 				return
 			}
-			chWrite <- hbd
+			//chWrite <- hbd
 
 		case data := <-chWrite:
 			// close agent while low-level conn broken
