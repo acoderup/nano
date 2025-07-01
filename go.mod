@@ -1,11 +1,11 @@
 module github.com/acoderup/nano
 
-go 1.24.4
+go 1.24.0
 
 //replace github.com/acoderup/core => ../core
 
 require (
-	github.com/acoderup/core v0.0.0-20250626065848-fbea424d1478
+	github.com/acoderup/core v1.0.2
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.4.2
