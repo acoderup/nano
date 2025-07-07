@@ -92,6 +92,11 @@ func (s *Session) Push(route string, v interface{}) error {
 	return s.entity.Push(route, v)
 }
 
+// SendToClient message to client
+func (s *Session) SendToClient(v interface{}) error {
+	return s.entity.Push("", v)
+}
+
 // Response message to client
 func (s *Session) Response(v interface{}) error {
 	return s.entity.Response(v)
