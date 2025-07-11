@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/acoderup/core/logger"
 	"log"
 	"net/http"
 	"os"
@@ -92,9 +93,9 @@ func runMaster(args *cli.Context) error {
 	}
 
 	webDir := filepath.Join(srcPath(), "master", "web")
-	log.Println("Nano master server web content directory", webDir)
-	log.Println("Nano master listen address", listen)
-	log.Println("Open http://127.0.0.1:12345/web/ in browser")
+	logger.Logger.Tracef("Nano master server web content directory [%v]", webDir)
+	logger.Logger.Tracef("Nano master listen address [%v]", listen)
+	logger.Logger.Tracef("Open http://127.0.0.1:12345/web/ in browser")
 
 	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir(webDir))))
 	go func() {
@@ -113,7 +114,7 @@ func runMaster(args *cli.Context) error {
 		nano.WithSerializer(json.NewSerializer()),
 		nano.WithDebugMode(),
 		nano.WithUnregisterCallback(func(m cluster.Member) {
-			log.Println("Todo alarm unregister:", m.String())
+			logger.Logger.Tracef("Todo alarm unregister: [%v]", m.String())
 		}),
 	)
 
@@ -136,9 +137,9 @@ func runGate(args *cli.Context) error {
 		return errors.Errorf("gate address cannot empty")
 	}
 
-	log.Println("Current server listen address", listen)
-	log.Println("Current gate server address", gateAddr)
-	log.Println("Remote master server address", masterAddr)
+	logger.Logger.Tracef("Current server listen address [%v]", listen)
+	logger.Logger.Tracef("Current gate server address [%v]", gateAddr)
+	logger.Logger.Tracef("Remote master server address [%v]", masterAddr)
 
 	// Startup Nano server with the specified listen address
 	nano.Listen(listen,
@@ -162,12 +163,12 @@ func runChat(args *cli.Context) error {
 	}
 
 	masterAddr := args.String("master")
-	if listen == "" {
+	if masterAddr == "" {
 		return errors.Errorf("master address cannot empty")
 	}
 
-	log.Println("Current chat server listen address", listen)
-	log.Println("Remote master server address", masterAddr)
+	logger.Logger.Tracef("Current chat server listen address [%v]", listen)
+	logger.Logger.Tracef("Remote master server address [%v]", masterAddr)
 
 	// Register session closed callback
 	session.Lifetime.OnClosed(chat.OnSessionClosed)

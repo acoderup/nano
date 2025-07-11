@@ -24,9 +24,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/acoderup/core/logger"
 	"strings"
-
-	"github.com/acoderup/nano/internal/log"
 )
 
 // Type represents the type of message, which could be Request/Notify/Response/Push
@@ -232,11 +231,11 @@ func SetDictionary(dict map[string]uint16) {
 
 		// duplication check
 		if _, ok := routes[r]; ok {
-			log.Println(fmt.Sprintf("duplicated route(route: %s, code: %d)", r, code))
+			logger.Logger.Tracef(fmt.Sprintf("duplicated route(route: %s, code: %d)", r, code))
 		}
 
 		if _, ok := codes[code]; ok {
-			log.Println(fmt.Sprintf("duplicated route(route: %s, code: %d)", r, code))
+			logger.Logger.Tracef(fmt.Sprintf("duplicated route(route: %s, code: %d)", r, code))
 		}
 
 		// update map, using last value when key duplicated

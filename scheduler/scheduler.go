@@ -22,12 +22,11 @@ package scheduler
 
 import (
 	"fmt"
+	"github.com/acoderup/core/logger"
+	"github.com/acoderup/nano/internal/env"
 	"runtime/debug"
 	"sync/atomic"
 	"time"
-
-	"github.com/acoderup/nano/internal/env"
-	"github.com/acoderup/nano/internal/log"
 )
 
 const (
@@ -55,7 +54,7 @@ var (
 func try(f func()) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println(fmt.Sprintf("Handle message panic: %+v\n%s", err, debug.Stack()))
+			logger.Logger.Tracef(fmt.Sprintf("Handle message panic: %+v\n%s", err, debug.Stack()))
 		}
 	}()
 	f()
@@ -92,7 +91,7 @@ func Close() {
 	}
 	close(chDie)
 	<-chExit
-	log.Println("Scheduler stopped")
+	logger.Logger.Trace("Scheduler stopped")
 }
 
 func PushTask(task Task) {

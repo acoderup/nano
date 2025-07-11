@@ -1,13 +1,12 @@
 package master
 
 import (
-	"log"
-	"strings"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/component"
 	"github.com/acoderup/nano/examples/cluster/protocol"
 	"github.com/acoderup/nano/session"
 	"github.com/pingcap/errors"
+	"strings"
 )
 
 type User struct {
@@ -86,5 +85,5 @@ func (ts *TopicService) Stats(s *session.Session, msg *protocol.MasterStats) err
 func (ts *TopicService) userDisconnected(s *session.Session) {
 	uid := s.UID()
 	delete(ts.users, uid)
-	log.Println("User session disconnected", s.UID())
+	logger.Logger.Tracef("User session disconnected [%v]", s.UID())
 }

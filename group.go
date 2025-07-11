@@ -22,13 +22,12 @@ package nano
 
 import (
 	"fmt"
-	"sync"
-	"sync/atomic"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/internal/env"
-	"github.com/acoderup/nano/internal/log"
 	"github.com/acoderup/nano/internal/message"
 	"github.com/acoderup/nano/session"
+	"sync"
+	"sync/atomic"
 )
 
 const (
@@ -116,7 +115,7 @@ func (c *Group) Multicast(route string, v interface{}, filter SessionFilter) err
 	}
 
 	if env.Debug {
-		log.Println(fmt.Sprintf("Multicast %s, Data=%+v", route, v))
+		logger.Logger.Tracef(fmt.Sprintf("Multicast %s, Data=%+v", route, v))
 	}
 
 	c.mu.RLock()
@@ -127,7 +126,7 @@ func (c *Group) Multicast(route string, v interface{}, filter SessionFilter) err
 			continue
 		}
 		if err = s.Push(route, data); err != nil {
-			log.Println(err.Error())
+			logger.Logger.Tracef(err.Error())
 		}
 	}
 
@@ -146,7 +145,7 @@ func (c *Group) Broadcast(route string, v interface{}) error {
 	}
 
 	if env.Debug {
-		log.Println(fmt.Sprintf("Broadcast %s, Data=%+v", route, v))
+		logger.Logger.Tracef(fmt.Sprintf("Broadcast %s, Data=%+v", route, v))
 	}
 
 	c.mu.RLock()
@@ -154,7 +153,7 @@ func (c *Group) Broadcast(route string, v interface{}) error {
 
 	for _, s := range c.sessions {
 		if err = s.Push(route, data); err != nil {
-			log.Println(fmt.Sprintf("Session push message error, ID=%d, UID=%d, Error=%s", s.ID(), s.UID(), err.Error()))
+			logger.Logger.Tracef(fmt.Sprintf("Session push message error, ID=%d, UID=%d, Error=%s", s.ID(), s.UID(), err.Error()))
 		}
 	}
 
@@ -174,7 +173,7 @@ func (c *Group) Add(session *session.Session) error {
 	}
 
 	if env.Debug {
-		log.Println(fmt.Sprintf("Add session to group %s, ID=%d, UID=%d", c.name, session.ID(), session.UID()))
+		logger.Logger.Tracef(fmt.Sprintf("Add session to group %s, ID=%d, UID=%d", c.name, session.ID(), session.UID()))
 	}
 
 	c.mu.Lock()
@@ -197,7 +196,7 @@ func (c *Group) Leave(s *session.Session) error {
 	}
 
 	if env.Debug {
-		log.Println(fmt.Sprintf("Remove session from group %s, UID=%d", c.name, s.UID()))
+		logger.Logger.Tracef(fmt.Sprintf("Remove session from group %s, UID=%d", c.name, s.UID()))
 	}
 
 	c.mu.Lock()

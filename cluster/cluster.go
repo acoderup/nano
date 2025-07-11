@@ -23,12 +23,11 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"sync"
-	"time"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/cluster/clusterpb"
 	"github.com/acoderup/nano/internal/env"
-	"github.com/acoderup/nano/internal/log"
+	"sync"
+	"time"
 )
 
 // cluster represents a nano cluster, which contains a bunch of nano nodes
@@ -90,7 +89,7 @@ func (c *cluster) Register(_ context.Context, req *clusterpb.RegisterRequest) (*
 		}
 	}
 
-	log.Println("New peer register to cluster", req.MemberInfo.ServiceAddr)
+	logger.Logger.Tracef("New peer register to cluster[%v]", req.MemberInfo.ServiceAddr)
 
 	// Register services to current node
 	c.currentNode.handler.addRemoteService(req.MemberInfo)
@@ -140,7 +139,7 @@ func (c *cluster) Unregister(_ context.Context, req *clusterpb.UnregisterRequest
 		}
 	}
 
-	log.Println("Exists peer unregister to cluster", req.ServiceAddr)
+	logger.Logger.Tracef("Exists peer unregister to cluster[%v]", req.ServiceAddr)
 
 	if c.currentNode.UnregisterCallback != nil {
 		c.currentNode.UnregisterCallback(*c.members[index])
@@ -180,7 +179,7 @@ func (c *cluster) Heartbeat(_ context.Context, req *clusterpb.HeartbeatRequest) 
 		}
 		c.members = append(c.members, m)
 		c.currentNode.handler.addRemoteService(req.MemberInfo)
-		log.Println("Heartbeat peer register to cluster", req.MemberInfo.ServiceAddr)
+		logger.Logger.Tracef("Heartbeat peer register to cluster[%v]", req.MemberInfo.ServiceAddr)
 	}
 	return &clusterpb.HeartbeatResponse{}, nil
 }
@@ -199,7 +198,7 @@ func (c *cluster) checkMemberHeartbeat() {
 			if _, err := c.Unregister(context.Background(), &clusterpb.UnregisterRequest{
 				ServiceAddr: m.MemberInfo().ServiceAddr,
 			}); err != nil {
-				log.Println("Heartbeat unregister error", err)
+				logger.Logger.Tracef("Heartbeat unregister error[%v]", err)
 			}
 		}
 	}

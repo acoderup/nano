@@ -2,20 +2,20 @@ package main
 
 import (
 	"fmt"
-	"github.com/acoderup/nano/cluster/clusterpb"
-	"log"
-	"net/http"
-	"os"
-	"path/filepath"
-	"runtime"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano"
+	"github.com/acoderup/nano/cluster/clusterpb"
 	"github.com/acoderup/nano/examples/customerroute/onegate"
 	"github.com/acoderup/nano/examples/customerroute/tworoom"
 	"github.com/acoderup/nano/serialize/json"
 	"github.com/acoderup/nano/session"
 	"github.com/pingcap/errors"
 	"github.com/urfave/cli"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
 )
 
 func main() {
@@ -92,9 +92,9 @@ func runMaster(args *cli.Context) error {
 	}
 
 	webDir := filepath.Join(srcPath(), "onemaster", "web")
-	log.Println("Nano master server web content directory", webDir)
-	log.Println("Nano master listen address", listen)
-	log.Println("Open http://127.0.0.1:12345/web/ in browser")
+	logger.Logger.Tracef("Nano master server web content directory [%v]", webDir)
+	logger.Logger.Tracef("Nano master listen address [%v]", listen)
+	logger.Logger.Tracef("Open http://127.0.0.1:12345/web/ in browser")
 
 	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir(webDir))))
 	go func() {
@@ -129,9 +129,9 @@ func runGate(args *cli.Context) error {
 		return errors.Errorf("gate address cannot empty")
 	}
 
-	log.Println("Current server listen address", listen)
-	log.Println("Current gate server address", gateAddr)
-	log.Println("Remote master server address", masterAddr)
+	logger.Logger.Tracef("Current server listen address [%v]", listen)
+	logger.Logger.Tracef("Current gate server address [%v]", gateAddr)
+	logger.Logger.Tracef("Remote master server address [%v]", masterAddr)
 
 	// Startup Nano server with the specified listen address
 	nano.Listen(listen,
@@ -161,8 +161,8 @@ func runChat(args *cli.Context) error {
 		return errors.Errorf("master address cannot empty")
 	}
 
-	log.Println("Current chat server listen address", listen)
-	log.Println("Remote master server address", masterAddr)
+	logger.Logger.Tracef("Current chat server listen address [%v]", listen)
+	logger.Logger.Tracef("Remote master server address [%v]", masterAddr)
 
 	// Register session closed callback
 	session.Lifetime.OnClosed(tworoom.OnSessionClosed)

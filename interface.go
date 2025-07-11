@@ -22,6 +22,13 @@ package nano
 
 import (
 	"fmt"
+	"github.com/acoderup/core/logger"
+	"github.com/acoderup/nano/cluster"
+	"github.com/acoderup/nano/component"
+	"github.com/acoderup/nano/internal/env"
+	"github.com/acoderup/nano/internal/log"
+	"github.com/acoderup/nano/internal/runtime"
+	"github.com/acoderup/nano/scheduler"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -29,13 +36,6 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
-
-	"github.com/acoderup/nano/cluster"
-	"github.com/acoderup/nano/component"
-	"github.com/acoderup/nano/internal/env"
-	"github.com/acoderup/nano/internal/log"
-	"github.com/acoderup/nano/internal/runtime"
-	"github.com/acoderup/nano/scheduler"
 )
 
 var running int32
@@ -56,7 +56,7 @@ var (
 // on incoming connections.
 func Listen(addr string, opts ...Option) {
 	if atomic.AddInt32(&running, 1) != 1 {
-		log.Println("Nano has running")
+		logger.Logger.Tracef("Nano has running")
 		return
 	}
 
@@ -80,7 +80,7 @@ func Listen(addr string, opts ...Option) {
 
 	// Use listen address as client address in non-cluster mode
 	if !opt.IsMaster && opt.AdvertiseAddr == "" && opt.ClientAddr == "" {
-		log.Println("The current server running in singleton mode")
+		logger.Logger.Tracef("The current server running in singleton mode")
 		opt.ClientAddr = addr
 	}
 
@@ -100,10 +100,10 @@ func Listen(addr string, opts ...Option) {
 	runtime.CurrentNode = node
 
 	if node.ClientAddr != "" {
-		log.Println(fmt.Sprintf("Startup *Nano gate server* %s, client address: %v, service address: %s",
+		logger.Logger.Infof(fmt.Sprintf("Startup *Nano gate server* %s, client address: %v, service address: %s",
 			app.name, node.ClientAddr, node.ServiceAddr))
 	} else {
-		log.Println(fmt.Sprintf("Startup *Nano backend server* %s, service address %s",
+		logger.Logger.Infof(fmt.Sprintf("Startup *Nano backend server* %s, service address %s",
 			app.name, node.ServiceAddr))
 	}
 
@@ -113,12 +113,12 @@ func Listen(addr string, opts ...Option) {
 
 	select {
 	case <-env.Die:
-		log.Println("The app will shutdown in a few seconds")
+		logger.Logger.Tracef("The app will shutdown in a few seconds")
 	case s := <-sg:
-		log.Println("Nano server got signal", s)
+		logger.Logger.Tracef("Nano server got signal", s)
 	}
 
-	log.Println("Nano server is stopping...")
+	logger.Logger.Tracef("Nano server is stopping...")
 
 	node.Shutdown()
 	runtime.CurrentNode = nil

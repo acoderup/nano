@@ -21,14 +21,13 @@
 package io
 
 import (
-	"log"
-	"net"
-	"sync"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/internal/codec"
 	"github.com/acoderup/nano/internal/message"
 	"github.com/acoderup/nano/internal/packet"
 	"google.golang.org/protobuf/proto"
+	"net"
+	"sync"
 )
 
 var (
@@ -197,7 +196,7 @@ func (c *Connector) sendMessage(msg *message.Message) error {
 		return err
 	}
 
-	//log.Printf("%+v",msg)
+	//logger.Logger.Tracef("%+v",msg)
 
 	payload, err := codec.Encode(packet.Data, data)
 	if err != nil {
@@ -217,7 +216,7 @@ func (c *Connector) write() {
 		select {
 		case data := <-c.chSend:
 			if _, err := c.conn.Write(data); err != nil {
-				log.Println(err.Error())
+				logger.Logger.Tracef(err.Error())
 				c.Close()
 			}
 
@@ -237,14 +236,14 @@ func (c *Connector) read() {
 	for {
 		n, err := c.conn.Read(buf)
 		if err != nil {
-			log.Println(err.Error())
+			logger.Logger.Tracef(err.Error())
 			c.Close()
 			return
 		}
 
 		packets, err := c.codec.Decode(buf[:n])
 		if err != nil {
-			log.Println(err.Error())
+			logger.Logger.Tracef(err.Error())
 			c.Close()
 			return
 		}
@@ -264,7 +263,7 @@ func (c *Connector) processPacket(p *packet.Packet) {
 	case packet.Data:
 		msg, err := message.Decode(p.Data)
 		if err != nil {
-			log.Println(err.Error())
+			logger.Logger.Tracef(err.Error())
 			return
 		}
 		c.processMessage(msg)
@@ -279,7 +278,7 @@ func (c *Connector) processMessage(msg *message.Message) {
 	case message.Push:
 		cb, ok := c.eventHandler(msg.Route)
 		if !ok {
-			log.Println("event handler not found", msg.Route)
+			logger.Logger.Tracef("event handler not found [%v]", msg.Route)
 			return
 		}
 
@@ -288,7 +287,7 @@ func (c *Connector) processMessage(msg *message.Message) {
 	case message.Response:
 		cb, ok := c.responseHandler(msg.ID)
 		if !ok {
-			log.Println("response handler not found", msg.ID)
+			logger.Logger.Tracef("response handler not found [%v]", msg.ID)
 			return
 		}
 

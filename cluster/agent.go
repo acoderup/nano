@@ -25,18 +25,17 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"net"
-	"reflect"
-	"sync/atomic"
-	"time"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/internal/codec"
 	"github.com/acoderup/nano/internal/env"
-	"github.com/acoderup/nano/internal/log"
 	"github.com/acoderup/nano/internal/message"
 	"github.com/acoderup/nano/pipeline"
 	"github.com/acoderup/nano/scheduler"
 	"github.com/acoderup/nano/session"
+	"net"
+	"reflect"
+	"sync/atomic"
+	"time"
 )
 
 const (
@@ -126,10 +125,10 @@ func (a *agent) Push(route string, v interface{}) error {
 	if env.Debug {
 		switch d := v.(type) {
 		case []byte:
-			log.Println(fmt.Sprintf("Type=Push, ID=%d, UID=%d, Route=%s, Data=%dbytes",
+			logger.Logger.Tracef(fmt.Sprintf("Type=Push, ID=%d, UID=%d, Route=%s, Data=%dbytes",
 				a.session.ID(), a.session.UID(), route, len(d)))
 		default:
-			log.Println(fmt.Sprintf("Type=Push, ID=%d, UID=%d, Route=%s, Data=%+v",
+			logger.Logger.Tracef(fmt.Sprintf("Type=Push, ID=%d, UID=%d, Route=%s, Data=%+v",
 				a.session.ID(), a.session.UID(), route, v))
 		}
 	}
@@ -181,10 +180,10 @@ func (a *agent) ResponseMid(mid uint64, v interface{}) error {
 	if env.Debug {
 		switch d := v.(type) {
 		case []byte:
-			log.Println(fmt.Sprintf("Type=Response, ID=%d, UID=%d, MID=%d, Data=%dbytes",
+			logger.Logger.Tracef(fmt.Sprintf("Type=Response, ID=%d, UID=%d, MID=%d, Data=%dbytes",
 				a.session.ID(), a.session.UID(), mid, len(d)))
 		default:
-			log.Println(fmt.Sprintf("Type=Response, ID=%d, UID=%d, MID=%d, Data=%+v",
+			logger.Logger.Tracef(fmt.Sprintf("Type=Response, ID=%d, UID=%d, MID=%d, Data=%+v",
 				a.session.ID(), a.session.UID(), mid, v))
 		}
 	}
@@ -202,7 +201,7 @@ func (a *agent) Close() error {
 	a.setStatus(statusClosed)
 
 	if env.Debug {
-		log.Println(fmt.Sprintf("Session closed, ID=%d, UID=%d, IP=%s",
+		logger.Logger.Tracef(fmt.Sprintf("Session closed, ID=%d, UID=%d, IP=%s",
 			a.session.ID(), a.session.UID(), a.conn.RemoteAddr()))
 	}
 
@@ -247,7 +246,7 @@ func (a *agent) write() {
 		close(chWrite)
 		a.Close()
 		if env.Debug {
-			log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
+			logger.Logger.Tracef(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
 		}
 	}()
 
@@ -256,7 +255,7 @@ func (a *agent) write() {
 		case <-ticker.C:
 			deadline := time.Now().Add(-2 * env.Heartbeat).Unix()
 			if atomic.LoadInt64(&a.lastAt) < deadline {
-				log.Println(fmt.Sprintf("Session heartbeat timeout, LastTime=%d, Deadline=%d", atomic.LoadInt64(&a.lastAt), deadline))
+				logger.Logger.Tracef(fmt.Sprintf("Session heartbeat timeout, LastTime=%d, Deadline=%d", atomic.LoadInt64(&a.lastAt), deadline))
 				return
 			}
 			//chWrite <- hbd
@@ -264,7 +263,7 @@ func (a *agent) write() {
 		case data := <-chWrite:
 			// close agent while low-level conn broken
 			if _, err := a.conn.Write(data); err != nil {
-				log.Println(err.Error())
+				logger.Logger.Tracef(err.Error())
 				return
 			}
 
@@ -273,9 +272,9 @@ func (a *agent) write() {
 			//if err != nil {
 			//	switch data.typ {
 			//	case message.Push:
-			//		log.Println(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
+			//		logger.Logger.Tracef(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
 			//	case message.Response:
-			//		log.Println(fmt.Sprintf("Response message(id: %d) error: %s", data.mid, err.Error()))
+			//		logger.Logger.Tracef(fmt.Sprintf("Response message(id: %d) error: %s", data.mid, err.Error()))
 			//	default:
 			//		// expect
 			//	}
@@ -292,21 +291,21 @@ func (a *agent) write() {
 			//if pipe := a.pipeline; pipe != nil {
 			//	err := pipe.Outbound().Process(a.session, m)
 			//	if err != nil {
-			//		log.Println("broken pipeline", err.Error())
+			//		logger.Logger.Tracef("broken pipeline", err.Error())
 			//		break
 			//	}
 			//}
 			//
 			//em, err := m.Encode()
 			//if err != nil {
-			//	log.Println(err.Error())
+			//	logger.Logger.Tracef(err.Error())
 			//	break
 			//}
 			//
 			//// packet encode
 			//p, err := codec.Encode(packet.Data, em)
 			//if err != nil {
-			//	log.Println(err)
+			//	logger.Logger.Tracef(err)
 			//	break
 			//}
 			var chw []byte
@@ -320,7 +319,7 @@ func (a *agent) write() {
 				buf := new(bytes.Buffer)
 				err := binary.Write(buf, binary.BigEndian, v)
 				if err != nil {
-					log.Println(err.Error())
+					logger.Logger.Tracef(err.Error())
 				}
 				chw = buf.Bytes()
 			default:

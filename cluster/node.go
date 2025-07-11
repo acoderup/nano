@@ -24,13 +24,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
-	"net/http"
-	"strings"
-	"sync"
-	"time"
-
-	"github.com/gorilla/websocket"
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/cluster/clusterpb"
 	"github.com/acoderup/nano/component"
 	"github.com/acoderup/nano/internal/env"
@@ -39,7 +33,13 @@ import (
 	"github.com/acoderup/nano/pipeline"
 	"github.com/acoderup/nano/scheduler"
 	"github.com/acoderup/nano/session"
+	"github.com/gorilla/websocket"
 	"google.golang.org/grpc"
+	"net"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
 )
 
 // Options contains some configurations for current node
@@ -182,7 +182,7 @@ func (n *Node) initNode() error {
 				n.cluster.initMembers(resp.Members)
 				break
 			}
-			log.Println("Register current node to cluster failed", err, "and will retry in", n.RetryInterval.String())
+			logger.Logger.Trace("Register current node to cluster failed", err, "and will retry in", n.RetryInterval.String())
 			time.Sleep(n.RetryInterval)
 		}
 		n.once.Do(n.keepalive)
@@ -211,7 +211,7 @@ func (n *Node) Shutdown() {
 	if !n.IsMaster && n.AdvertiseAddr != "" {
 		pool, err := n.rpcClient.getConnPool(n.AdvertiseAddr)
 		if err != nil {
-			log.Println("Retrieve master address error", err)
+			logger.Logger.Tracef("Retrieve master address error [%v]", err)
 			goto EXIT
 		}
 		client := clusterpb.NewMasterClient(pool.Get())
@@ -220,7 +220,7 @@ func (n *Node) Shutdown() {
 		}
 		_, err = client.Unregister(context.Background(), request)
 		if err != nil {
-			log.Println("Unregister current node failed", err)
+			logger.Logger.Tracef("Unregister current node failed [%v]", err)
 			goto EXIT
 		}
 	}
@@ -242,7 +242,7 @@ func (n *Node) listenAndServe() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Println(err.Error())
+			logger.Logger.Tracef(err.Error())
 			continue
 		}
 
@@ -260,7 +260,7 @@ func (n *Node) listenAndServeWS() {
 	http.HandleFunc("/"+strings.TrimPrefix(env.WSPath, "/"), func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Println(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
+			logger.Logger.Tracef(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 			return
 		}
 
@@ -282,7 +282,7 @@ func (n *Node) listenAndServeWSTLS() {
 	http.HandleFunc("/"+strings.TrimPrefix(env.WSPath, "/"), func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Println(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
+			logger.Logger.Tracef(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 			return
 		}
 
@@ -391,7 +391,7 @@ func (n *Node) NewMember(_ context.Context, req *clusterpb.NewMemberRequest) (*c
 }
 
 func (n *Node) DelMember(_ context.Context, req *clusterpb.DelMemberRequest) (*clusterpb.DelMemberResponse, error) {
-	log.Println("DelMember member", req.String())
+	logger.Logger.Tracef("DelMember member [%v]", req.String())
 	n.handler.delMember(req.ServiceAddr)
 	n.cluster.delMember(req.ServiceAddr)
 	return &clusterpb.DelMemberResponse{}, nil
@@ -432,7 +432,7 @@ func (n *Node) keepalive() {
 	heartbeat := func() {
 		pool, err := n.rpcClient.getConnPool(n.AdvertiseAddr)
 		if err != nil {
-			log.Println("rpcClient master conn", err)
+			logger.Logger.Tracef("rpcClient master conn [%v]", err)
 			return
 		}
 		masterCli := clusterpb.NewMasterClient(pool.Get())
@@ -443,7 +443,7 @@ func (n *Node) keepalive() {
 				Services:    n.handler.LocalService(),
 			},
 		}); err != nil {
-			log.Println("Member send heartbeat error", err)
+			logger.Logger.Tracef("Member send heartbeat error [%v]", err)
 		}
 	}
 	go func() {
@@ -453,7 +453,7 @@ func (n *Node) keepalive() {
 			case <-ticker.C:
 				heartbeat()
 			case <-n.keepaliveExit:
-				log.Println("Exit member node heartbeat ")
+				logger.Logger.Tracef("Exit member node heartbeat ")
 				ticker.Stop()
 				return
 			}

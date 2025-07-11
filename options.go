@@ -1,9 +1,6 @@
 package nano
 
 import (
-	"net/http"
-	"time"
-
 	"github.com/acoderup/nano/cluster"
 	"github.com/acoderup/nano/component"
 	"github.com/acoderup/nano/internal/env"
@@ -14,6 +11,8 @@ import (
 	"github.com/acoderup/nano/service"
 	"github.com/acoderup/nano/session"
 	"google.golang.org/grpc"
+	"net/http"
+	"time"
 )
 
 type Option func(*cluster.Options)

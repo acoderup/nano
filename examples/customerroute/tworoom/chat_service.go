@@ -1,8 +1,7 @@
 package tworoom
 
 import (
-	"log"
-
+	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano"
 	"github.com/acoderup/nano/component"
 	"github.com/acoderup/nano/examples/cluster/protocol"
@@ -36,8 +35,8 @@ func (rs *ChatRoomService) SyncMessage(s *session.Session, msg *SyncMessage) err
 
 func (rs *ChatRoomService) userDisconnected(s *session.Session) {
 	if err := rs.group.Leave(s); err != nil {
-		log.Println("Remove user from group failed", s.UID(), err)
+		logger.Logger.Tracef("Remove user from group failed uid[%v] err[%v]", s.UID(), err)
 		return
 	}
-	log.Println("User session disconnected", s.UID())
+	logger.Logger.Tracef("User session disconnected uid[%v]", s.UID())
 }

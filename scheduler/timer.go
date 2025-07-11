@@ -22,7 +22,7 @@ package scheduler
 
 import (
 	"fmt"
-	"log"
+	"github.com/acoderup/core/logger"
 	"math"
 	"runtime/debug"
 	"sync"
@@ -93,7 +93,7 @@ func (t *Timer) Stop() {
 func safecall(id int64, fn TimerFunc) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println(fmt.Sprintf("Handle timer panic: %+v\n%s", err, debug.Stack()))
+			logger.Logger.Tracef(fmt.Sprintf("Handle timer panic: %+v\n%s", err, debug.Stack()))
 		}
 	}()
 

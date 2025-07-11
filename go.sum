@@ -1,6 +1,6 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/acoderup/core v1.0.2 h1:0p8oH+3xpluXlm1Yes0u65lRy3s4FO+CgpZqGR36gbI=
-github.com/acoderup/core v1.0.2/go.mod h1:1EqtFPSvdhWjnT0OoVQ6S9mUfMxsIRddE+gUD14JsQs=
+github.com/acoderup/core v1.0.3 h1:sCM7i7aX4YxtG/X7xfiLX9OBD1R08xQ/O+InOeMBYDc=
+github.com/acoderup/core v1.0.3/go.mod h1:1EqtFPSvdhWjnT0OoVQ6S9mUfMxsIRddE+gUD14JsQs=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/bwmarrin/snowflake v0.3.0 h1:xm67bEhkKh6ij1790JB83OujPR5CzNe8QuQqAgISZN0=
