@@ -5,7 +5,7 @@ go 1.24.0
 //replace github.com/acoderup/core => ../core
 
 require (
-	github.com/acoderup/core v1.0.3
+	github.com/acoderup/core v1.0.4
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.4.2
