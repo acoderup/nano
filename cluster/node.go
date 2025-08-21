@@ -24,6 +24,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/cluster/clusterpb"
 	"github.com/acoderup/nano/component"
@@ -35,11 +41,6 @@ import (
 	"github.com/acoderup/nano/session"
 	"github.com/gorilla/websocket"
 	"google.golang.org/grpc"
-	"net"
-	"net/http"
-	"strings"
-	"sync"
-	"time"
 )
 
 // Options contains some configurations for current node
@@ -246,7 +247,7 @@ func (n *Node) listenAndServe() {
 			continue
 		}
 
-		go n.handler.handle(conn)
+		go n.handler.handle(conn, n.ClientAddr)
 	}
 }
 
@@ -263,13 +264,43 @@ func (n *Node) listenAndServeWS() {
 			logger.Logger.Tracef(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 			return
 		}
-
-		n.handler.handleWS(conn)
+		ip := GetClientIP(r)
+		n.handler.handleWS(conn, ip)
 	})
 
 	if err := http.ListenAndServe(n.ClientAddr, nil); err != nil {
 		log.Fatal(err.Error())
 	}
+}
+
+// 获取客户端 IP 地址
+func GetClientIP(r *http.Request) string {
+	ip := r.Header.Get("X-Real-IP")
+	if ip != "" {
+		return ip
+	}
+
+	ip = r.Header.Get("X-Forwarded-For")
+	if ip != "" {
+		// X-Forwarded-For 可能包含多个 IP 地址，取第一个非本地 IP
+		ips := strings.Split(ip, ",")
+		for _, val := range ips {
+			val = strings.TrimSpace(val)
+			if !(ip == "127.0.0.1" || ip == "::1") {
+				return val
+			}
+		}
+	}
+
+	ip = r.RemoteAddr
+	if ip != "" {
+		// RemoteAddr 的格式为 IP:Port，需要提取 IP 部分
+		idx := strings.LastIndex(ip, ":")
+		if idx != -1 {
+			ip = ip[:idx]
+		}
+	}
+	return ip
 }
 
 func (n *Node) listenAndServeWSTLS() {
@@ -285,8 +316,8 @@ func (n *Node) listenAndServeWSTLS() {
 			logger.Logger.Tracef(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 			return
 		}
-
-		n.handler.handleWS(conn)
+		ip := GetClientIP(r)
+		n.handler.handleWS(conn, ip)
 	})
 
 	if err := http.ListenAndServeTLS(n.ClientAddr, n.TSLCertificate, n.TSLKey, nil); err != nil {

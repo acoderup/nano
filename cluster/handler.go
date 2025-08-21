@@ -24,6 +24,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"net"
+	"reflect"
+	"sort"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/cluster/clusterpb"
 	"github.com/acoderup/nano/component"
@@ -35,13 +43,6 @@ import (
 	"github.com/acoderup/nano/scheduler"
 	"github.com/acoderup/nano/session"
 	"github.com/gorilla/websocket"
-	"math/rand"
-	"net"
-	"reflect"
-	"sort"
-	"strings"
-	"sync"
-	"time"
 )
 
 var (
@@ -198,9 +199,9 @@ func (h *LocalHandler) RemoteService() []string {
 	return result
 }
 
-func (h *LocalHandler) handle(conn net.Conn) {
+func (h *LocalHandler) handle(conn net.Conn, ip string) {
 	// create a client agent and startup write gorontine
-	agent := newAgent(conn, h.pipeline, h.remoteProcess)
+	agent := newAgent(conn, ip, h.pipeline, h.remoteProcess)
 	h.currentNode.storeSession(agent.session)
 
 	// startup write goroutine
@@ -430,13 +431,13 @@ func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
 	}
 }
 
-func (h *LocalHandler) handleWS(conn *websocket.Conn) {
+func (h *LocalHandler) handleWS(conn *websocket.Conn, ip string) {
 	c, err := newWSConn(conn)
 	if err != nil {
 		logger.Logger.Trace(err)
 		return
 	}
-	go h.handle(c)
+	go h.handle(c, ip)
 }
 
 func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, session *session.Session, msg *message.Message) {

@@ -25,6 +25,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"net"
+	"reflect"
+	"sync/atomic"
+	"time"
+
 	"github.com/acoderup/core/logger"
 	"github.com/acoderup/nano/internal/codec"
 	"github.com/acoderup/nano/internal/env"
@@ -32,10 +37,6 @@ import (
 	"github.com/acoderup/nano/pipeline"
 	"github.com/acoderup/nano/scheduler"
 	"github.com/acoderup/nano/session"
-	"net"
-	"reflect"
-	"sync/atomic"
-	"time"
 )
 
 const (
@@ -77,7 +78,7 @@ type (
 )
 
 // Create new agent instance
-func newAgent(conn net.Conn, pipeline pipeline.Pipeline, rpcHandler rpcHandler) *agent {
+func newAgent(conn net.Conn, ip string, pipeline pipeline.Pipeline, rpcHandler rpcHandler) *agent {
 	a := &agent{
 		conn:       conn,
 		state:      statusStart,
@@ -91,6 +92,7 @@ func newAgent(conn net.Conn, pipeline pipeline.Pipeline, rpcHandler rpcHandler) 
 
 	// binding session
 	s := session.New(a)
+	s.SetIp(ip)
 	a.session = s
 	a.srv = reflect.ValueOf(s)
 

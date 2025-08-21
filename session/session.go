@@ -58,6 +58,7 @@ type Session struct {
 	entity       NetworkEntity          // low-level network entity
 	data         map[string]interface{} // session data store
 	router       *Router
+	ip           string
 }
 
 // New returns a new session instance
@@ -421,4 +422,10 @@ func (s *Session) Clear() {
 
 	s.uid = 0
 	s.data = map[string]interface{}{}
+}
+func (s *Session) SetIp(ip string) {
+	s.ip = ip
+}
+func (s *Session) Ip() string {
+	return s.ip
 }
