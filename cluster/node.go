@@ -247,7 +247,7 @@ func (n *Node) listenAndServe() {
 			continue
 		}
 
-		go n.handler.handle(conn, n.ClientAddr)
+		go n.handler.handle(conn, n.ClientAddr, "Unknown")
 	}
 }
 
@@ -265,7 +265,8 @@ func (n *Node) listenAndServeWS() {
 			return
 		}
 		ip := GetClientIP(r)
-		n.handler.handleWS(conn, ip)
+		userAgent := r.Header.Get("User-Agent")
+		n.handler.handleWS(conn, ip, userAgent)
 	})
 
 	if err := http.ListenAndServe(n.ClientAddr, nil); err != nil {
@@ -317,7 +318,8 @@ func (n *Node) listenAndServeWSTLS() {
 			return
 		}
 		ip := GetClientIP(r)
-		n.handler.handleWS(conn, ip)
+		userAgent := r.Header.Get("User-Agent")
+		n.handler.handleWS(conn, ip, userAgent)
 	})
 
 	if err := http.ListenAndServeTLS(n.ClientAddr, n.TSLCertificate, n.TSLKey, nil); err != nil {

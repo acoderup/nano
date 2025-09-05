@@ -59,6 +59,7 @@ type Session struct {
 	data         map[string]interface{} // session data store
 	router       *Router
 	ip           string
+	userAgent    string
 }
 
 // New returns a new session instance
@@ -428,4 +429,10 @@ func (s *Session) SetIp(ip string) {
 }
 func (s *Session) Ip() string {
 	return s.ip
+}
+func (s *Session) SetUserAgent(userAgent string) {
+	s.userAgent = userAgent
+}
+func (s *Session) UserAgent() string {
+	return s.userAgent
 }

@@ -199,9 +199,9 @@ func (h *LocalHandler) RemoteService() []string {
 	return result
 }
 
-func (h *LocalHandler) handle(conn net.Conn, ip string) {
+func (h *LocalHandler) handle(conn net.Conn, ip, userAgent string) {
 	// create a client agent and startup write gorontine
-	agent := newAgent(conn, ip, h.pipeline, h.remoteProcess)
+	agent := newAgent(conn, ip, userAgent, h.pipeline, h.remoteProcess)
 	h.currentNode.storeSession(agent.session)
 
 	// startup write goroutine
@@ -431,13 +431,13 @@ func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
 	}
 }
 
-func (h *LocalHandler) handleWS(conn *websocket.Conn, ip string) {
+func (h *LocalHandler) handleWS(conn *websocket.Conn, ip, userAgent string) {
 	c, err := newWSConn(conn)
 	if err != nil {
 		logger.Logger.Trace(err)
 		return
 	}
-	go h.handle(c, ip)
+	go h.handle(c, ip, userAgent)
 }
 
 func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, session *session.Session, msg *message.Message) {

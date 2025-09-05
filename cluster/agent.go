@@ -78,7 +78,7 @@ type (
 )
 
 // Create new agent instance
-func newAgent(conn net.Conn, ip string, pipeline pipeline.Pipeline, rpcHandler rpcHandler) *agent {
+func newAgent(conn net.Conn, ip, userAgent string, pipeline pipeline.Pipeline, rpcHandler rpcHandler) *agent {
 	a := &agent{
 		conn:       conn,
 		state:      statusStart,
@@ -93,6 +93,7 @@ func newAgent(conn net.Conn, ip string, pipeline pipeline.Pipeline, rpcHandler r
 	// binding session
 	s := session.New(a)
 	s.SetIp(ip)
+	s.SetUserAgent(userAgent)
 	a.session = s
 	a.srv = reflect.ValueOf(s)
 
